@@ -13,4 +13,13 @@ fn main() {
     
     println!("Input String: {}", input_string);
     println!("Test String: {}", test_string);
+    
+    // Split string by ' + ' and ' -> '
+    let reactants_and_products: Vec<&str> = input_string.split(" -> ").collect();
+    let reactants: Vec<&str> = reactants_and_products[0].split(" + ").collect();
+    let products: Vec<&str> = reactants_and_products[1].split(" + ").collect();
+    
+    println!("Reactants and Products: {:?}", reactants_and_products);
+    println!("Reactants: {:?}", reactants);
+    println!("Products: {:?}", products);
 }
