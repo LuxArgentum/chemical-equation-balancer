@@ -19,8 +19,10 @@ enum DevState {
 fn main() {
     let test_string = "2N_2H_4 + N_2O_4 -> 3N_2 + 4H_2O_15";
     let molecule_pattern = r"(\d)*(([A-Z][a-z]?_\d*)|([A-Z][a-z]?))*";
-    let equation_regex = format!("{} \\+ {} -> {} \\+ {}", molecule_pattern, molecule_pattern,
-                                 molecule_pattern, molecule_pattern);
+    let equation_regex = format!(
+        "{} \\+ {} -> {} \\+ {}",
+        molecule_pattern, molecule_pattern, molecule_pattern, molecule_pattern
+    );
     let equation_regex = Regex::new(&equation_regex).unwrap();
     let mut input_string = String::new();
 
@@ -38,7 +40,7 @@ fn main() {
             DevState::Testing => {
                 input_string = test_string.parse().unwrap();
                 break;
-            },
+            }
             DevState::Deploy => {
                 match stdin().read_line(&mut input_string) {
                     Ok(_) => {
@@ -61,7 +63,7 @@ fn main() {
                         input_string = String::new();
                     }
                 };
-            },
+            }
         }
     }
 
@@ -94,8 +96,11 @@ fn main() {
     println!("Product Molecules: {:?}", product_molecules);
 }
 
-fn create_molecule<'a>(mut molecules: std::vec::Vec<Molecule<'a>>, input_molecule: &'a str) -> Vec<Molecule<'a>> {
-    let molecule_regex = Regex::new( r"(\d)*(([A-Z][a-z]?_\d*)|([A-Z][a-z]?))*").unwrap();
+fn create_molecule<'a>(
+    mut molecules: Vec<Molecule<'a>>,
+    input_molecule: &'a str,
+) -> Vec<Molecule<'a>> {
+    let molecule_regex = Regex::new(r"(\d)*(([A-Z][a-z]?_\d*)|([A-Z][a-z]?))*").unwrap();
     let element_regex = Regex::new(r"([A-Z][a-z]?_\d*|[A-Z][a-z]?)").unwrap();
 
     let caps = molecule_regex.captures(input_molecule).unwrap();
@@ -106,14 +111,7 @@ fn create_molecule<'a>(mut molecules: std::vec::Vec<Molecule<'a>>, input_molecul
 
     let mut elements = HashMap::new();
 
-    for element_match in element_regex.find_iter(input_molecule) {
-        let element_parts: Vec<&str> = element_match.as_str().split('_').collect();
-
-        let element = element_parts[0];
-        let count = element_parts.get(1).map_or(1, |m| m.parse::<u32>().unwrap());
-
-        elements.insert(element, count);
-    }
+    elements = get_elements(elements, element_regex, input_molecule);
 
     let molecule = Molecule {
         formula: caps.get(0).unwrap().as_str(),
@@ -129,4 +127,22 @@ fn create_molecule<'a>(mut molecules: std::vec::Vec<Molecule<'a>>, input_molecul
     molecules.push(molecule);
 
     molecules
+}
+
+fn get_elements<'a>(
+    mut elements: HashMap<&'a str, u32>,
+    element_regex: Regex,
+    input_molecule: &'a str,
+) -> HashMap<&'a str, u32> {
+    for element_match in element_regex.find_iter(input_molecule) {
+        let element_parts: Vec<&str> = element_match.as_str().split('_').collect();
+
+        let element = element_parts[0];
+        let count = element_parts
+            .get(1)
+            .map_or(1, |m| m.parse::<u32>().unwrap());
+
+        elements.insert(element, count);
+    }
+    elements
 }
